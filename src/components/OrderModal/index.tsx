@@ -9,9 +9,18 @@ interface OrderModalProps {
   visible: boolean;
   order: Order | null;
   onCLose: () => void;
+  onCancelOrder: () => Promise<void>;
+  isLoading: boolean;
+  handleOrderChangeStatus: () => void;
 }
 
-export function OrderModal({ visible, order, onCLose }: OrderModalProps) {
+export function OrderModal({
+  visible, order,
+  onCLose,
+  onCancelOrder,
+  isLoading,
+  handleOrderChangeStatus
+}: OrderModalProps) {
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if(event.key === 'Escape') {
@@ -68,7 +77,7 @@ export function OrderModal({ visible, order, onCLose }: OrderModalProps) {
             {order.products.map(({ _id, product, quantity }) => (
               <div className="item" key={_id}>
                 <img
-                  src={`http://localhost:3002/uploads/${product.imagePath}`}
+                  src={`http://localhost:3001/uploads/${product.imagePath}`}
                   alt={product.name}
                   width="56px"
                 />
@@ -90,12 +99,30 @@ export function OrderModal({ visible, order, onCLose }: OrderModalProps) {
         </OrderDetails>
 
         <Actions>
-          <button type='button' className='primary'>
-            <span>🧑‍🍳</span>
-            <strong>Iniciar produção</strong>
-          </button>
+          {order.status !== 'DONE' && (
+            <button
+              type='button'
+              className='primary'
+              disabled={isLoading}
+              onClick={handleOrderChangeStatus}
+            >
+              <span>
+                {order.status === 'WAITING' && '🧑‍🍳'}
+                {order.status === 'IN_PRODUCTION' && '✅'}
+              </span>
+              <strong>
+                {order.status === 'WAITING' && 'Iniciar produção'}
+                {order.status === 'IN_PRODUCTION' && 'Concluir pedido'}
+              </strong>
+            </button>
+          )}
 
-          <button type='button' className='secondary'>
+          <button
+            type='button'
+            className='secondary'
+            onClick={onCancelOrder}
+            disabled={isLoading}
+          >
             Cancelar pedido
           </button>
         </Actions>
